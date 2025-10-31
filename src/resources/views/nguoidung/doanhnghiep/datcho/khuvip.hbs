@@ -1,0 +1,176 @@
+<div class="vip-screen">
+  <div class="vip-app">
+    <!-- Header -->
+    <div class="vip-topbar">
+      <div class="vip-brand"><div class="vip-logo">J</div> JUST</div>
+      <div class="vip-title">VIP</div>
+      <div class="vip-switch" title="Sang khu thường">
+        <a href="/doanhnghiep/nguoidung/datcho/khuthuong"><span class="vip-dot">1</span><span>Khu thường</span><span>›</span></a>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="vip-stage">
+      <div class="vip-content" id="vipContent">
+        <!-- Floor 2 -->
+        <div class="vip-floor">
+          <div class="vip-floor-label">Lầu 2</div>
+          <div class="vip-row">
+            <div class="vip-spot" data-vip-id="2-1" data-vip-count="1">
+              <div class="vip-num">1</div>
+              <div class="vip-room-icon"><div class="vip-room-table"></div></div>
+            </div>
+            <div class="vip-spot" data-vip-id="2-2" data-vip-count="1">
+              <div class="vip-num">2</div>
+              <div class="vip-room-icon"><div class="vip-room-table"></div></div>
+            </div>
+            <div class="vip-spot" data-vip-id="2-3" data-vip-count="1">
+              <div class="vip-num">3</div>
+              <div class="vip-room-icon"><div class="vip-room-table"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floor 3 -->
+        <div class="vip-floor">
+          <div class="vip-floor-label">Lầu 3</div>
+          <div class="vip-row">
+            <div class="vip-spot" data-vip-id="3-1" data-vip-count="1">
+              <div class="vip-num">1</div>
+              <div class="vip-room-icon"><div class="vip-room-table"></div></div>
+            </div>
+            <div class="vip-spot" data-vip-id="3-2" data-vip-count="1">
+              <div class="vip-num">2</div>
+              <div class="vip-room-icon"><div class="vip-room-table"></div></div>
+            </div>
+            <div class="vip-spot vip-reserved vip-disabled" data-vip-id="3-3" data-vip-count="1" title="Đã được đặt" aria-disabled="true">
+              <div class="vip-num">3</div>
+              <div class="vip-room-icon"><div class="vip-room-table"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="vip-right">
+        <div class="vip-card">
+          <div class="vip-room-icon sm"><div class="vip-room-table"></div></div>
+          <div class="vip-card-text">
+            <div class="vip-title">1 phòng riêng</div>
+            <div class="vip-desc">Có thể thêm bàn-ghế<br>Không vượt quá 20 người</div>
+          </div>
+        </div>
+        <div class="vip-card">
+          <div class="vip-legend-square"></div>
+          <div class="vip-card-text">
+            <div class="vip-title">Đã được đặt</div>
+            <div class="vip-desc" style="color:var(--muted)">Phòng đang bận, không thể chọn</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="vip-bottombar">
+      <div class="vip-bottom-inner">
+        <div class="vip-count">Số chỗ đã chọn: <span id="vipCount">0</span></div>
+        <button id="vipPayBtn" class="vip-pay-btn" type="button" disabled>
+          <span>Thanh toán: <span id="vipAmount">0đ</span></span>
+          <div class="vip-arrow">➜</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<span id="ctx" data-user="{{#if user}}{{user.tenNguoiDung}}{{/if}}" hidden></span>
+
+<!-- ... HTML layout của bạn ... -->
+
+<script>
+  const VIP_PRICE_PER_ROOM = 1000000;
+  const vipSelected = new Map();
+  const vipAmountEl = document.getElementById('vipAmount');
+  const vipCountEl  = document.getElementById('vipCount');
+  const vipPayBtn   = document.getElementById('vipPayBtn');
+
+  // ✅ Sửa cú pháp clean()
+  function clean(v) {
+    const raw = (v ?? '').toString().trim();
+    const low = raw.toLowerCase();
+    if (raw === '' || low === 'undefined' || low === 'null') return '';
+    return raw;
+  }
+
+  const ctxEl      = document.getElementById('ctx');
+  const serverUser = clean(ctxEl?.dataset.user);
+  const qs         = new URLSearchParams(location.search);
+  const urlUser    = clean(qs.get('usr') || qs.get('username'));
+  const dn         = qs.get('dn')   || '';
+  const date       = qs.get('date') || '';
+  const time       = qs.get('time') || '';
+  const usr        = serverUser || urlUser || 'Khách';
+
+  // ✅ Giữ context khi quay về Khu thường
+  (function updateThuongLink(){
+    const a = document.querySelector('.vip-switch a');
+    if (!a) return;
+    const next = new URLSearchParams({ date, time, dn, usr }).toString();
+    a.href = '/doanhnghiep/nguoidung/datcho/khuthuong?' + next;
+  })();
+
+  function formatVND(n){ return (n || 0).toLocaleString('vi-VN') + 'đ'; }
+  function vipTotalRooms(){ let t=0; for (const c of vipSelected.values()) t+=c; return t; }
+
+  function vipUpdateFooter(){
+    const rooms  = vipTotalRooms();
+    const amount = rooms * VIP_PRICE_PER_ROOM;
+    vipCountEl.textContent  = rooms;
+    vipAmountEl.textContent = formatVND(amount);
+    vipPayBtn.disabled = rooms === 0;
+    vipPayBtn.dataset.rooms    = rooms;
+    vipPayBtn.dataset.amount   = amount;
+    vipPayBtn.dataset.selected = Array.from(vipSelected.keys()).join(',');
+  }
+
+  function vipToggleSpot(el){
+    if (el.classList.contains('vip-disabled')) return;
+    const id = el.dataset.vipId;
+    const count = parseInt(el.dataset.vipCount || '1', 10);
+    if (vipSelected.has(id)) {
+      vipSelected.delete(id);
+      el.classList.remove('vip-selected');
+      el.setAttribute('aria-pressed','false');
+    } else {
+      vipSelected.set(id, count);
+      el.classList.add('vip-selected');
+      el.setAttribute('aria-pressed','true');
+    }
+    vipUpdateFooter();
+  }
+
+  document.querySelectorAll('.vip-spot').forEach(spot => {
+    spot.setAttribute('role','button');
+    spot.setAttribute('tabindex','0');
+    spot.setAttribute('aria-pressed','false');
+    spot.addEventListener('click', () => vipToggleSpot(spot));
+    spot.addEventListener('keydown', e => {
+      if (e.key==='Enter'||e.key===' ') { e.preventDefault(); vipToggleSpot(spot); }
+    });
+  });
+
+  // ✅ Sang hóa đơn: luôn gửi kèm usr + danh sách phòng/ghế VIP đã chọn
+  vipPayBtn.addEventListener('click', () => {
+    if (vipPayBtn.disabled) return;
+    const params = new URLSearchParams({
+      area: 'vip',
+      rooms:    vipPayBtn.dataset.rooms,
+      amount:   vipPayBtn.dataset.amount,
+      selected: vipPayBtn.dataset.selected, // ví dụ: "2-1,2-3"
+      date, time, dn, usr
+    });
+    location.href = '/doanhnghiep/nguoidung/datcho/hoadon?' + params.toString();
+  });
+
+  vipUpdateFooter();
+</script>

@@ -1,0 +1,284 @@
+<div class="admin-cat-container">
+    <header class="admin-cat-topbar">
+      <div class="admin-cat-topbar-inner">
+        <img src="/img/logo.png" alt="JUST" style="height:40px;object-fit:contain">
+        <h1 class="admin-cat-title">Quản lý danh mục</h1>
+        <div class="admin-cat-admin">
+          <div class="admin-cat-admin-avatar">A</div>
+          <div>Quản Trị Viên</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-cat-page">
+      <section class="admin-cat-card" id="admin-cat-card">
+        <div class="admin-cat-toolbar">
+          <button id="admin-cat-btnAdd" class="admin-cat-btn admin-cat-btn-add">+ Thêm danh mục</button>
+        </div>
+
+        <div class="admin-cat-tabs" id="admin-cat-tabs">
+            <button class="admin-cat-tab active" data-type="restaurant">Nhà hàng</button>
+            <button class="admin-cat-tab" data-type="homestay">Homestay</button>
+            <button class="admin-cat-tab" data-type="bar">Quán bar</button>
+        </div>
+        <div class="admin-cat-table-wrap">
+          <table class="admin-cat-table" id="admin-cat-tblCategories">
+            <thead>
+              <tr>
+                <th style="width:60px">ID</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th style="width:200px">Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="admin-cat-catBody">
+                </tbody>
+          </table>
+        </div>
+
+        <div class="admin-cat-floating" id="admin-cat-confirmBar">
+          <button class="admin-cat-btn-confirm" id="admin-cat-btnConfirm">Lưu danh mục</button>
+        </div>
+      </section>
+    </main>
+  </div>
+    <script>
+      // Dữ liệu giả lập, trong dự án thật bạn sẽ lấy từ database
+      const mockData = {
+          restaurant: [
+              { id: 1, name: 'Món Việt', description: 'Các món ăn truyền thống Việt Nam' },
+              { id: 2, name: 'Hải sản', description: 'Chuyên các món từ hải sản tươi sống' },
+              { id: 3, name: 'Có phòng riêng', description: 'Phù hợp cho các buổi tiệc riêng tư' },
+          ],
+          homestay: [
+              { id: 101, name: 'Có hồ bơi', description: 'Homestay có hồ bơi riêng hoặc chung' },
+              { id: 102, name: 'Gần biển', description: 'Vị trí đi bộ ra bãi biển được' },
+              { id: 103, name: 'Cho phép thú cưng', description: 'Có thể mang theo vật nuôi' },
+          ],
+          bar: [
+              { id: 201, name: 'Rooftop Bar', description: 'Quán bar trên sân thượng, view đẹp' },
+              { id: 202, name: 'Live Music', description: 'Có biểu diễn nhạc sống hàng đêm' },
+          ]
+      };
+
+      // === State của ứng dụng ===
+      let currentType = 'restaurant'; // Tab đang active
+      let editingRowId = null;        // ID của dòng đang sửa
+      let isAdding = false;           // Cờ báo hiệu đang trong trạng thái thêm mới
+
+      // === DOM Elements ===
+      const bodyEl = document.getElementById('admin-cat-catBody');
+      const btnAdd = document.getElementById('admin-cat-btnAdd');
+      const confirmBar = document.getElementById('admin-cat-confirmBar');
+      const btnConfirm = document.getElementById('admin-cat-btnConfirm');
+      const tabsContainer = document.getElementById('admin-cat-tabs');
+
+      // === Helpers ===
+      const escapeHtml = (str) => str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      const escapeAttr = (str) => escapeHtml(str).replace(/"/g, '&quot;');
+      const qsa = (sel, scope = document) => [...scope.querySelectorAll(sel)];
+      
+      // === Core Functions ===
+      
+      /**
+       * Render lại toàn bộ table dựa trên `currentType` và `mockData`
+       */
+       function renderTable() {
+          const data = mockData[currentType];
+          bodyEl.innerHTML = ''; // Xóa nội dung cũ
+
+          if (data.length === 0) {
+              bodyEl.innerHTML = `<tr><td colspan="4" class="admin-cat-empty">Chưa có danh mục nào cho mục này.</td></tr>`;
+          } else {
+              // THAY ĐỔI Ở ĐÂY: Thêm 'index' vào vòng lặp
+              data.forEach((item, index) => {
+                  const tr = document.createElement('tr');
+                  tr.dataset.id = item.id; // Vẫn giữ ID thật để sửa/xóa
+
+                  if (editingRowId === item.id) {
+                      // Render dòng đang ở trạng thái sửa
+                      tr.innerHTML = `
+                          <td>${index + 1}</td>
+                          <td class="admin-cat-cell-input"><input type="text" class="admin-cat-input" name="name" value="${escapeAttr(item.name)}" placeholder="Tên danh mục"></td>
+                          <td class="admin-cat-cell-input"><input type="text" class="admin-cat-input" name="description" value="${escapeAttr(item.description)}" placeholder="Mô tả ngắn"></td>
+                          <td class="admin-cat-actions">
+                              <button class="admin-cat-pill admin-cat-pill-save" data-action="saveEdit">Lưu</button>
+                              <button class="admin-cat-pill admin-cat-pill-cancel" data-action="cancelEdit">Hủy</button>
+                          </td>
+                      `;
+                  } else {
+                      // Render dòng bình thường
+                      tr.innerHTML = `
+                          <td>${index + 1}</td>
+                          <td>${escapeHtml(item.name)}</td>
+                          <td>${escapeHtml(item.description)}</td>
+                          <td class="admin-cat-actions">
+                              <button class="admin-cat-pill admin-cat-pill-edit" data-action="edit">Sửa</button>
+                              <button class="admin-cat-pill admin-cat-pill-del" data-action="delete">Xóa</button>
+                          </td>
+                      `;
+                  }
+                  bodyEl.appendChild(tr);
+              });
+          }
+
+          // Render dòng thêm mới nếu đang ở trạng thái isAdding
+          if (isAdding) {
+              const draftRow = document.createElement('tr');
+              draftRow.id = 'admin-cat-row-draft';
+              // Dòng mới sẽ có số thứ tự tiếp theo
+              const nextIndex = data.length + 1;
+              draftRow.innerHTML = `
+                  <td>${nextIndex}</td>
+                  <td class="admin-cat-cell-input"><input type="text" class="admin-cat-input" name="name" placeholder="Tên danh mục mới"></td>
+                  <td class="admin-cat-cell-input"><input type="text" class="admin-cat-input" name="description" placeholder="Mô tả ngắn"></td>
+                  <td class="admin-cat-actions">
+                      <button class="admin-cat-pill admin-cat-pill-cancel" data-action="cancelAdd">Hủy</button>
+                  </td>
+              `;
+              bodyEl.appendChild(draftRow);
+              draftRow.querySelector('input[name="name"]').focus();
+          }
+
+          confirmBar.classList.toggle('show', isAdding);
+      }
+      function ensureIdle() {
+          if (isAdding) { alert('Bạn đang thêm danh mục mới. Hãy Lưu hoặc Hủy.'); return false; }
+          if (editingRowId !== null) { alert('Bạn đang sửa một danh mục. Hãy Lưu hoặc Hủy.'); return false; }
+          return true;
+      }
+      
+      function startAdd() {
+          if (!ensureIdle()) return;
+          isAdding = true;
+          renderTable();
+      }
+
+      function cancelAdd() {
+          isAdding = false;
+          renderTable();
+      }
+
+      function confirmAdd() {
+          const draftRow = document.getElementById('admin-cat-row-draft');
+          if (!draftRow) return;
+
+          const nameInput = draftRow.querySelector('input[name="name"]');
+          const descInput = draftRow.querySelector('input[name="description"]');
+          const name = (nameInput.value || '').trim();
+          
+          if (!name) {
+              nameInput.focus();
+              nameInput.style.borderColor = '#ef4444';
+              return;
+          }
+          nameInput.style.borderColor = '';
+
+          // Thêm dữ liệu mới vào mockData
+          const newId = (Math.max(0, ...mockData[currentType].map(i => i.id)) + 1);
+          mockData[currentType].push({
+              id: newId,
+              name: name,
+              description: (descInput.value || '').trim()
+          });
+
+          isAdding = false;
+          renderTable();
+      }
+
+      function startEdit(tr) {
+          if (!ensureIdle()) return;
+          editingRowId = Number(tr.dataset.id);
+          renderTable();
+          // Focus vào input sau khi render lại
+          const editingTr = bodyEl.querySelector(`[data-id="${editingRowId}"]`);
+          if (editingTr) editingTr.querySelector('input[name="name"]').focus();
+      }
+      
+      function cancelEdit() {
+          editingRowId = null;
+          renderTable();
+      }
+
+      function saveEdit(tr) {
+          const id = Number(tr.dataset.id);
+          const nameInput = tr.querySelector('input[name="name"]');
+          const descInput = tr.querySelector('input[name="description"]');
+          const name = (nameInput.value || '').trim();
+
+          if (!name) {
+              nameInput.focus();
+              nameInput.style.borderColor = '#ef4444';
+              return;
+          }
+
+          // Cập nhật dữ liệu trong mockData
+          const itemIndex = mockData[currentType].findIndex(item => item.id === id);
+          if (itemIndex > -1) {
+              mockData[currentType][itemIndex].name = name;
+              mockData[currentType][itemIndex].description = (descInput.value || '').trim();
+          }
+
+          editingRowId = null;
+          renderTable();
+      }
+
+      function deleteRow(tr) {
+          const id = Number(tr.dataset.id);
+          const item = mockData[currentType].find(i => i.id === id);
+          if (item && confirm(`Bạn chắc chắn muốn xóa danh mục: "${item.name}"?`)) {
+              // Xóa dữ liệu khỏi mockData
+              mockData[currentType] = mockData[currentType].filter(i => i.id !== id);
+              renderTable();
+          }
+      }
+
+      // === Event Listeners ===
+      btnAdd.addEventListener('click', startAdd);
+      btnConfirm.addEventListener('click', confirmAdd);
+
+      tabsContainer.addEventListener('click', (e) => {
+          if (e.target.matches('.admin-cat-tab')) {
+              if (!ensureIdle()) return;
+              currentType = e.target.dataset.type;
+              qsa('.admin-cat-tab').forEach(tab => tab.classList.remove('active'));
+              e.target.classList.add('active');
+              renderTable();
+          }
+      });
+      
+      bodyEl.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-action]');
+          if (!btn) return;
+
+          const tr = btn.closest('tr');
+          const action = btn.dataset.action;
+
+          switch (action) {
+              case 'edit': startEdit(tr); break;
+              case 'delete': deleteRow(tr); break;
+              case 'saveEdit': saveEdit(tr); break;
+              case 'cancelEdit': cancelEdit(); break;
+              case 'cancelAdd': cancelAdd(); break;
+          }
+      });
+
+      document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+              if (isAdding) cancelAdd();
+              else if (editingRowId !== null) cancelEdit();
+          }
+          if (e.key === 'Enter') {
+              if (isAdding) confirmAdd();
+              else if (editingRowId !== null) {
+                const tr = bodyEl.querySelector(`tr[data-id="${editingRowId}"]`);
+                if (tr) saveEdit(tr);
+              }
+          }
+      });
+
+      // === Initial Render ===
+      renderTable();
+
+    </script>
+

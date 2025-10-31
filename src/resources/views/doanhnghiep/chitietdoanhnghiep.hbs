@@ -1,0 +1,161 @@
+
+  
+   <div class="demoDoanhNghiep">
+   <div class="slider">
+    <div class="tracks">
+      {{#each doanhNghiep.images}}
+     <img src="{{this}}" alt="" class="track">
+       {{/each}}
+    </div>
+    <div class="items">
+      {{#each doanhNghiep.images}}
+      <div class="item {{#if @first}}selected{{/if}}"></div>
+    {{/each}}
+    </div>
+    <div class="nav-btn left"> < </div>
+    <div class="nav-btn right"> > </div>
+   </div>
+   <div class="thongTinDoanhNghiep">
+    <div class="logoChiTiet">
+         <img src="{{doanhNghiep.image}}" alt="Logo ">
+         <p>{{doanhNghiep.tenDoanhNghiep}}</p>
+    </div>
+    <div class="thongTin">
+       <p>{{doanhNghiep.moTa}}</p>
+    </div>
+     <button class="btn-datCho">Đặt chỗ ngay</button>
+   </div>
+  </div>
+  </div>
+  
+  <div class="soLuocDoanhNghiep">
+    <div class="tomLuoc">
+        <h3>*Tóm Lược</h3>
+     <p>{{doanhNghiep.tomLuoc}}</p>
+     <i>Địa chỉ: {{doanhNghiep.diaChi}}</i>
+     </br>
+     <i>HotLine: {{doanhNghiep.soDienThoai}}</i>
+    </div>
+    <div class="gioMoCua">
+      <div class="headerGioMoCua">
+     <ul> Giờ Mở Cửa
+       <li>Mở đến 04:00 </li>
+     </ul>
+      </div>
+      <ul class="contentGioMoCua">
+        <li>Thứ Hai</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Ba</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Tư</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Năm</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Sáu</li>
+        <li>18:00 ~ 04:00</li>
+        <li>Thứ Bảy</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Chủ Nhật</li>
+        <li>Đóng Cửa</li> 
+      </ul>
+    </div>
+  </div>
+<div class="danhGia">
+  <li>Đánh Giá</li>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="book">
+    <div class="book-header">
+      <h2>Chọn khung giờ</h2>
+      <button id="close-book">X</button>
+  </div>
+  <div class="book-content">
+    <h2>Bạn cần đăng nhập để có thể đặt chỗ</h2>
+  </div>
+</div>
+</div>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tracks = document.querySelector('.tracks');
+  const track = document.querySelectorAll('.track');
+  const item = document.querySelectorAll('.item');
+  const prevBtn = document.querySelector('.nav-btn.left');
+  const nextBtn = document.querySelector('.nav-btn.right');
+  const overlay = document.getElementById("overlay");
+  const closeBtn = document.getElementById("close-book");
+  let currentIndex = 0;
+
+  // Hàm update slider và item selected
+  function updateSliderAndItem() {
+    const sliderWidth = track[0].clientWidth;
+    tracks.style.transform = `translateX(-${currentIndex * sliderWidth}px)`;
+    item.forEach((dot, idx) => {
+      dot.classList.toggle('selected', idx === currentIndex);
+    });
+  }
+
+  // Tự động chuyển ảnh + cập nhật dot indicator
+  setInterval(() => {
+    if (currentIndex >= track.length - 1) {
+      currentIndex = 0;
+    } else {
+      currentIndex++;
+    }
+    updateSliderAndItem();
+  }, 4000);
+
+  // Xử lý nút điều hướng
+  function handleBtnClick(direction) {
+    if (direction === 'next' && currentIndex < track.length - 1) {
+      currentIndex++;
+    } else if (direction === 'prev' && currentIndex > 0) {
+      currentIndex--;
+    } else if (direction === 'next') {
+      currentIndex = 0; // Quay lại ảnh đầu tiên nếu bấm next ở ảnh cuối
+    } else if (direction === 'prev') {
+      currentIndex = track.length - 1; // Quay về ảnh cuối nếu bấm prev ở ảnh đầu
+    }
+    updateSliderAndItem();
+  }
+
+  // Chuyển tới ảnh theo dot indicator
+  item.forEach((dot, idx) => {
+    dot.addEventListener('click', () => {
+      currentIndex = idx;
+      updateSliderAndItem();
+    });
+  });
+
+  // Bắt sự kiện click nút trái/phải
+  nextBtn.addEventListener('click', () => handleBtnClick('next'));
+  prevBtn.addEventListener('click', () => handleBtnClick('prev'));
+
+  // Khởi tạo slider ban đầu
+  updateSliderAndItem();
+
+
+  // mở overlay khi click nút "Đặt chỗ ngay"
+    document.querySelector(".btn-datCho").addEventListener("click", () => {
+    overlay.classList.add("active");
+    });
+
+    // đóng overlay khi bấm X
+    closeBtn.addEventListener("click", () => {
+    overlay.classList.remove("active");
+    });
+
+    // (optional) đóng khi click ra ngoài book
+    overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove("active");
+    }
+    });
+});
+
+</script>

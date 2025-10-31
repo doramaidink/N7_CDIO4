@@ -1,0 +1,46 @@
+<div class="admin-v-container">
+
+    <main class="admin-v-page" id="admin-v-page">
+      <section class="admin-v-grid">
+        <div class="admin-v-card" id="card-accounts">
+          <div class="admin-v-card-header">
+            <h1 class="admin-v-title">Chỗ đã đặt </h1>
+          </div>
+          <form method="POST" action="">
+          <div class="admin-v-table-wrap">
+            <table class="admin-v-table" id="table-accounts" aria-describedby="tableCaption">
+              <thead>
+                <tr>
+                  <th style="width:72px">STT</th>
+                  <th>Tên Doanh Nghiệp</th>
+                  <th>Số Chỗ</th>
+                  <th>Giờ</th>
+                  <th>Trạng Thái</th>
+                  <th>Xem Hóa Đơn</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each HoaDon}}
+                <tr>
+                  <td class="admin-v-cell">{{sum @index 1}}</td>
+                  <td class="admin-v-cell">{{this.tenDoanhNghiep}}</td>
+                  <td class="admin-v-cell">{{this.soChoHoacPhong}}</td>
+                  <td class="admin-v-cell">{{this.gio}}</td>
+                  <td class="admin-v-cell">{{this.trangThai}}</td>
+                  <td class="admin-v-cell admin-v-actions">
+                    <a href="chi-tiet-nguoi-dung.html">
+                      Xem Hóa Đơn
+                      <span class="admin-v-action-role">người dùng</span>
+                    </a>
+                  </td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+  </div>

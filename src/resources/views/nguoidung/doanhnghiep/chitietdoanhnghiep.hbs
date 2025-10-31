@@ -1,0 +1,237 @@
+
+  
+   <div class="demoDoanhNghiep">
+   <div class="slider">
+    <div class="tracks">
+      {{#each doanhNghiep.images}}
+     <img src="{{this}}" alt="" class="track">
+       {{/each}}
+    </div>
+    <div class="items">
+      {{#each doanhNghiep.images}}
+      <div class="item {{#if @first}}selected{{/if}}"></div>
+    {{/each}}
+    </div>
+    <div class="nav-btn left"> < </div>
+    <div class="nav-btn right"> > </div>
+   </div>
+   <div class="thongTinDoanhNghiep">
+    <div class="logoChiTiet">
+         <img src="{{doanhNghiep.image}}" alt="Logo ">
+         <p>{{doanhNghiep.tenDoanhNghiep}}</p>
+    </div>
+    <div class="thongTin">
+       <p>{{doanhNghiep.moTa}}</p>
+    </div>
+     <button class="btn-datCho">Đặt chỗ ngay</button>
+   </div>
+  </div>
+  </div>
+  
+  <div class="soLuocDoanhNghiep">
+    <div class="tomLuoc">
+        <h3>*Tóm Lược</h3>
+     <p>{{doanhNghiep.tomLuoc}}</p>
+     <i>Địa chỉ: {{doanhNghiep.diaChi}}</i>
+     </br>
+     <i>HotLine: {{doanhNghiep.soDienThoai}}</i>
+    </div>
+    <div class="gioMoCua">
+      <div class="headerGioMoCua">
+     <ul> Giờ Mở Cửa
+       <li>Mở đến 04:00 </li>
+     </ul>
+      </div>
+      <ul class="contentGioMoCua">
+        <li>Thứ Hai</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Ba</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Tư</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Năm</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Thứ Sáu</li>
+        <li>18:00 ~ 04:00</li>
+        <li>Thứ Bảy</li>
+        <li>18:00 ~ 02:00</li>
+        <li>Chủ Nhật</li>
+        <li>Đóng Cửa</li> 
+      </ul>
+    </div>
+  </div>
+<div class="danhGia">
+  <li>Đánh Giá</li>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="book">
+    <div class="book-header">
+      <h2>Chọn khung giờ</h2>
+      <button id="close-book">X</button>
+  </div>
+  <div class="book-content">
+     <!-- Chọn ngày -->
+      <div class="form-group">
+        <label > ---Chọn Ngày----</label>
+        <input type="date" id="datePicker" class="input-field">
+      </div>
+       <!-- Chọn giờ -->
+      <div class="form-group">
+        <select id="timeSelect" class="input-field">
+          <option value="">--- Chọn thời gian ---</option>
+          <!-- Giờ sẽ được render bằng JS -->
+        </select>
+      </div>
+     <a href="/doanhnghiep/nguoidung/datcho/khuthuong"> <button  id="submitBooking" class="btn-submit">Chọn vị trí →</button></a>
+  </div>
+</div>
+</div>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tracks = document.querySelector('.tracks');
+  const track = document.querySelectorAll('.track');
+  const item = document.querySelectorAll('.item');
+  const prevBtn = document.querySelector('.nav-btn.left');
+  const nextBtn = document.querySelector('.nav-btn.right');
+  const overlay = document.getElementById("overlay");
+  const closeBtn = document.getElementById("close-book");
+  const submitBooking = document.getElementById('submitBooking');
+  const datePicker = document.getElementById('datePicker');
+  const timeSelect = document.getElementById('timeSelect');
+  const submitBtn  = document.getElementById('submitBooking');         // ✅ THÊM
+  const submitLink = submitBtn.closest('a');  
+  let currentIndex = 0;
+
+  // Hàm update slider và item selected
+  function updateSliderAndItem() {
+    const sliderWidth = track[0].clientWidth;
+    tracks.style.transform = `translateX(-${currentIndex * sliderWidth}px)`;
+    item.forEach((dot, idx) => {
+      dot.classList.toggle('selected', idx === currentIndex);
+    });
+  }
+
+  // Tự động chuyển ảnh + cập nhật dot indicator
+  setInterval(() => {
+    if (currentIndex >= track.length - 1) {
+      currentIndex = 0;
+    } else {
+      currentIndex++;
+    }
+    updateSliderAndItem();
+  }, 4000);
+
+  // Xử lý nút điều hướng
+  function handleBtnClick(direction) {
+    if (direction === 'next' && currentIndex < track.length - 1) {
+      currentIndex++;
+    } else if (direction === 'prev' && currentIndex > 0) {
+      currentIndex--;
+    } else if (direction === 'next') {
+      currentIndex = 0; // Quay lại ảnh đầu tiên nếu bấm next ở ảnh cuối
+    } else if (direction === 'prev') {
+      currentIndex = track.length - 1; // Quay về ảnh cuối nếu bấm prev ở ảnh đầu
+    }
+    updateSliderAndItem();
+  }
+
+  // Chuyển tới ảnh theo dot indicator
+  item.forEach((dot, idx) => {
+    dot.addEventListener('click', () => {
+      currentIndex = idx;
+      updateSliderAndItem();
+    });
+  });
+
+  // Bắt sự kiện click nút trái/phải
+  nextBtn.addEventListener('click', () => handleBtnClick('next'));
+  prevBtn.addEventListener('click', () => handleBtnClick('prev'));
+
+  // Khởi tạo slider ban đầu
+  updateSliderAndItem();
+
+
+  // mở overlay khi click nút "Đặt chỗ ngay"
+    document.querySelector(".btn-datCho").addEventListener("click", () => {
+    overlay.classList.add("active");
+    });
+
+    // đóng overlay khi bấm X
+    closeBtn.addEventListener("click", () => {
+    overlay.classList.remove("active");
+    });
+
+    // (optional) đóng khi click ra ngoài book
+    overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove("active");
+    }
+    });
+     for (let h = 1; h <= 23; h++) {
+    const option = document.createElement('option');
+    option.value = `${h}:00`;
+    option.textContent = `${h}h00`;
+    timeSelect.appendChild(option);
+  }
+
+  // Khi chọn ngày → lấy trạng thái giờ từ DB
+  datePicker.addEventListener('change', async () => {
+    const date = datePicker.value;
+    const response = await fetch(`/api/available-times?date=${date}`);
+    const times = await response.json();
+
+    // reset
+    Array.from(timeSelect.options).forEach(opt => {
+      if (opt.value) opt.disabled = false;
+      opt.classList.remove('disabled');
+    });
+
+    // disable giờ đã full hoặc không nhận khách
+    times.unavailable.forEach(hour => {
+      const option = Array.from(timeSelect.options).find(opt => opt.value === hour);
+      if (option) {
+        option.disabled = true;
+        option.classList.add('disabled');
+      }
+    });
+  });
+  function updateLink() {
+    const date = datePicker.value;
+    const time = timeSelect.value;
+    // tên DN & tên user lấy trực tiếp từ template (nếu có)
+    const dn  = encodeURIComponent('{{doanhNghiep.tenDoanhNghiep}}');
+    const usr = encodeURIComponent('{{#if user}}{{user.tenNguoiDung}}{{else}}Khách{{/if}}');
+
+    if (date && time) {
+      const qs = new URLSearchParams({ date, time, dn, usr, area: 'thuong' }).toString();
+      submitLink.setAttribute('href', '/doanhnghiep/nguoidung/datcho/khuthuong?' + qs);
+      submitBtn.classList.remove('disabled');
+      submitBtn.removeAttribute('aria-disabled');
+    } else {
+      // Chưa đủ -> khoá
+      submitLink.setAttribute('href', 'javascript:void(0)');
+      submitBtn.classList.add('disabled');
+      submitBtn.setAttribute('aria-disabled', 'true');
+    }
+  }
+
+  updateLink();
+  datePicker.addEventListener('change', updateLink);
+  timeSelect.addEventListener('change', updateLink);
+
+  // Chặn click khi chưa chọn đủ
+  submitLink.addEventListener('click', (e)=>{
+    if (submitBtn.classList.contains('disabled')) {
+      e.preventDefault();
+      alert('Vui lòng chọn ngày và giờ trước khi tiếp tục.');
+    }
+  });
+});
+
+</script>

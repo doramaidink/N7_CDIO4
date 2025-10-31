@@ -1,0 +1,91 @@
+
+    <div class="admin-v-container">
+
+    <main class="admin-v-page" id="admin-v-page">
+      <section class="admin-v-grid">
+        <div class="admin-v-card" id="card-accounts">
+          <div class="admin-v-card-header">
+            <h1 class="admin-v-title">Quản lý tài khoản</h1>
+          </div>
+          <form method="POST" action="">
+          <div class="admin-v-table-wrap">
+            <table class="admin-v-table" id="table-accounts" aria-describedby="tableCaption">
+              <thead>
+                <tr>
+                  <th style="width:72px">STT</th>
+                  <th>Username</th>
+                  <th>Số điện thoại</th>
+                  <th>Vai trò</th>
+                  <th>Trạng thái</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each user}}
+                <tr>
+                  <td class="admin-v-cell">{{sum @index 1}}</td>
+                  <td class="admin-v-cell">{{this.tenDangNhap}}</td>
+                  <td class="admin-v-cell">{{this.soDienThoai}}</td>
+                  <td class="admin-v-cell">{{this.vaiTro}}</td>
+                  <td class="admin-v-cell">
+                    <span class="admin-v-badge {{#if (eq this.trangThai 'Khóa')}}is-locked{{else}}is-active{{/if}}">
+                      <span class="admin-v-badge-dot"></span> {{this.trangThai}}
+                    </span>
+                  </td>
+                  <td class="admin-v-cell admin-v-actions">
+                    <a href="chi-tiet-nguoi-dung.html">
+                      Xem chi tiết tài khoản
+                      <span class="admin-v-action-role">người dùng</span>
+                    </a>
+                  </td>
+                </tr>
+                {{/each}}
+                {{#each doanhnghiep}}
+                <tr>
+                  <td class="admin-v-cell">{{sum (sum @index 1) ../user.length}}</td>
+                  <td class="admin-v-cell">{{this.tenTaiKhoan}}</td>
+                  <td class="admin-v-cell">{{this.soDienThoai}}</td>
+                  <td class="admin-v-cell">{{this.vaiTro}}</td>
+                  <td class="admin-v-cell">
+                    <span class="admin-v-badge {{#if (eq this.trangThai 'Khóa')}}is-locked{{else}}is-active{{/if}}">
+                      <span class="admin-v-badge-dot"></span> {{this.trangThai}}
+                    </span>
+                  </td>
+                  <td class="admin-v-cell admin-v-actions">
+                     <a href="chi-tiet-doanh-nghiep.html">
+                      Xem chi tiết tài khoản
+                      <span class="admin-v-action-role">doanh nghiệp</span>
+                    </a>
+                  </td>
+                </tr>
+                {{/each}}
+              </tbody>
+              <caption id="tableCaption" class="hide-mobile" style="text-align:left;padding:10px 16px;color:var(--admin-v-muted)">
+                Danh sách tài khoản người dùng và doanh nghiệp.
+              </caption>
+            </table>
+          </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+  </div>
+    <script>
+      // ===== Dropdown toggle (IDs/class names prefix `admin-v-` to tránh xung đột) =====
+      (function dropdown(){
+        const root = document.getElementById('admin-v-dropdown');
+        const menu = document.getElementById('admin-v-menuList');
+
+        const toggle = () => menu.classList.toggle('show');
+        const hide = (e) => { if(!root.contains(e.target)) menu.classList.remove('show'); };
+
+        root.addEventListener('click', (e)=>{
+          // Chỉ toggle khi click vùng avatar/tên (không ảnh hưởng khi bấm vào link)
+          if(e.target.closest('.admin-v-menu-list a')) return;
+          toggle();
+        });
+        document.addEventListener('click', hide);
+        document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') menu.classList.remove('show'); });
+      })();
+    </script>

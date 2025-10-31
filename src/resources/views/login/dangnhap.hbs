@@ -1,0 +1,41 @@
+<div class="container-dangNhap">
+  <!-- Bên trái -->
+  <div class="left-dangNhap">
+    <h2 class="title-dangNhap">Đăng nhập</h2>
+    <div class="social-dangNhap">
+      <i class="fab fa-facebook-f"></i>
+      <i class="fab fa-google"></i>
+      <i class="fab fa-linkedin-in"></i>
+    </div>
+    <p>Sử dụng tài khoản trên</p>
+    <form id="form-dangnhap" method="POST" action="/login/xulydangnhap">
+      <div class="form-group-dangNhap ">
+        <input id="tenDangNhap" class="input-dangNhap" type="text" name="username" placeholder="Tên người dùng">
+      </div>
+      <div class="form-group-dangNhap  {{#if error}}invalid{{/if}}">
+        <input id="matKhau" class="input-dangNhap" type="password" name="password" placeholder="Mật khẩu">
+        <span class="form-message">{{error}} </span>
+      </div>
+      <div class="forgot-dangNhap">Quên mật khẩu?</div>
+      <button type="submit" class="btn-dangNhap btn-login-dangNhap">Đăng nhập</button>
+    </form>
+  </div>
+
+  <!-- Bên phải -->
+  <div class="right-dangNhap">
+    <h2 class="title-dangNhap">Chào bạn!</h2>
+    <p>Nhập thông tin cá nhân của bạn và bắt đầu hành trình cùng chúng tôi</p>
+    <a href="dangky"><button class="btn-dangNhap btn-register-dangNhap">Đăng ký</button></a>
+  </div>
+</div>
+<script src="/js/ValidatorDN.js"></script>
+<script>
+    Validator({
+    form : '#form-dangnhap',
+    errorSelector: '.form-message',
+    rules:[
+            Validator.isUserDN('#matKhau'),
+    ]
+    
+  });
+</script>

@@ -1,0 +1,190 @@
+<div class="screen">
+  <div class="app">
+    <!-- Header -->
+    <div class="topbar">
+      <div class="brand"><div class="logo">J</div> JUST</div>
+      <div class="center-title">Thường</div>
+      <div class="vip-link" title="Khu VIP">
+        <a href="/doanhnghiep/nguoidung/datcho/khuvip"><span class="dot">1</span><span>Khu VIP</span><span class="arr">›</span></a>
+      </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="stage">
+      <div class="left-legend">
+        <div>
+          <div class="door"></div>
+          <small class="muted">Cửa vào</small>
+        </div>
+      </div>
+
+      <div class="grid" id="grid">
+        <!-- Row 1 -->
+        <div class="r1">
+          <div class="spot" data-id="1" data-count="1"><div class="num">1</div><div class="tbls"><div class="table-icon"></div></div></div>
+          <div class="spot" data-id="2" data-count="1"><div class="num">2</div><div class="tbls"><div class="table-icon"></div></div></div>
+          <div class="spot" data-id="3" data-count="1"><div class="num">3</div><div class="tbls"><div class="table-icon"></div></div></div>
+          <div class="spot" data-id="4" data-count="1"><div class="num">4</div><div class="tbls"><div class="table-icon"></div></div></div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="r2">
+          <div class="spot" data-id="5" data-count="2">
+            <div class="num">5</div>
+            <div class="tbls"><div class="table-icon"></div><div class="table-icon"></div></div>
+          </div>
+          <div class="spot" data-id="6" data-count="2">
+            <div class="num">6</div>
+            <div class="tbls"><div class="table-icon"></div><div class="table-icon"></div></div>
+          </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="r3">
+          <div class="spot" data-id="7" data-count="3">
+            <div class="num">7</div>
+            <div class="tbls"><div class="table-icon"></div><div class="table-icon"></div><div class="table-icon"></div></div>
+          </div>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="r4">
+          <div class="spot" data-id="8" data-count="1"><div class="num">8</div><div class="tbls"><div class="table-icon"></div></div></div>
+          <div class="spot" data-id="9" data-count="1"><div class="num">9</div><div class="tbls"><div class="table-icon"></div></div></div>
+          <div class="spot" data-id="11" data-count="1"><div class="num">11</div><div class="tbls"><div class="table-icon"></div></div></div>
+        </div>
+
+        <!-- Row 5: reserved -->
+        <div class="r5">
+          <div class="spot reserved disabled" data-id="10" data-count="1" title="Đã được đặt" aria-disabled="true">
+            <div class="num">10</div>
+            <div class="tbls"><div class="table-icon"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="right-panel">
+        <div class="panel-card">
+          <div class="title">Tối đa 4 người</div>
+          <div class="tbls"><div class="table-icon"></div></div>
+        </div>
+        <div class="panel-card">
+          <div class="title">Tối đa 6 người</div>
+          <div class="tbls"><div class="table-icon"></div><div class="table-icon"></div></div>
+        </div>
+        <div class="panel-card">
+          <div class="title">Tối đa 12 người</div>
+          <div class="tbls"><div class="table-icon"></div><div class="table-icon"></div><div class="table-icon"></div></div>
+        </div>
+        <div class="panel-card">
+          <div class="tbls"><div class="table-icon" style="background:#e73a39;border-color:#e73a39"></div></div>
+          <div class="title">Đã được đặt</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottombar">
+      <div class="bottom-inner">
+        <div class="sel-count">Số chỗ đã chọn: <span id="count">0</span></div>
+        <button id="payBtn" class="pay-btn" type="button" disabled>
+          <span>Thanh toán: <span id="amount">0đ</span></span>
+          <div class="btn">➜</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<span id="ctx" data-user="{{#if user}}{{user.tenNguoiDung}}{{/if}}" hidden></span>
+<script>
+  const PRICE_PER_TABLE = 50000;
+  const selected = new Map();
+
+  const grid     = document.getElementById('grid');
+  const amountEl = document.getElementById('amount');
+  const countEl  = document.getElementById('count');
+  const payBtn   = document.getElementById('payBtn');
+
+  // ✅ Sửa cú pháp: không còn "(...s.toLowerCase("
+  function clean(v) {
+    const raw = (v ?? '').toString().trim();
+    const low = raw.toLowerCase();
+    if (raw === '' || low === 'undefined' || low === 'null') return '';
+    return raw;
+  }
+
+  // ✅ Lấy usr: ưu tiên từ session (data-user), sau đó ?usr/?username, cuối cùng 'Khách'
+  const ctxEl      = document.getElementById('ctx');
+  const serverUser = clean(ctxEl?.dataset.user);
+  const qs         = new URLSearchParams(location.search);
+  const urlUser    = clean(qs.get('usr') || qs.get('username'));
+  const dn         = qs.get('dn')   || '';
+  const date       = qs.get('date') || '';
+  const time       = qs.get('time') || '';
+  const usr        = serverUser || urlUser || 'Khách';
+
+  // ✅ Giữ context khi chuyển sang VIP
+  (function updateVipLink(){
+    const a = document.querySelector('.vip-link a');
+    if (!a) return;
+    const next = new URLSearchParams({ date, time, dn, usr }).toString();
+    a.href = '/doanhnghiep/nguoidung/datcho/khuvip?' + next;
+  })();
+
+  const formatVND = n => (n || 0).toLocaleString('vi-VN') + 'đ';
+  function totalTables(){ let t=0; for (const c of selected.values()) t+=c; return t; }
+
+  function updateFooter(){
+    const tables = totalTables();
+    const amount = tables * PRICE_PER_TABLE;
+    countEl.textContent = tables;
+    amountEl.textContent = formatVND(amount);
+    payBtn.disabled = tables === 0;
+    payBtn.dataset.tables   = tables;
+    payBtn.dataset.amount   = amount;
+    payBtn.dataset.selected = Array.from(selected.keys()).join(',');
+  }
+
+  function toggleSpot(el){
+    if (el.classList.contains('disabled')) return;
+    const id = el.dataset.id;
+    const count = parseInt(el.dataset.count || '1', 10);
+    if (selected.has(id)) {
+      selected.delete(id);
+      el.classList.remove('selected');
+      el.setAttribute('aria-pressed','false');
+    } else {
+      selected.set(id, count);
+      el.classList.add('selected');
+      el.setAttribute('aria-pressed','true');
+    }
+    updateFooter();
+  }
+
+  grid.querySelectorAll('.spot').forEach(spot => {
+    spot.setAttribute('role','button');
+    spot.setAttribute('tabindex','0');
+    spot.setAttribute('aria-pressed','false');
+    spot.addEventListener('click', () => toggleSpot(spot));
+    spot.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSpot(spot); }
+    });
+  });
+
+  // ✅ Sang hóa đơn: luôn gửi kèm usr + danh sách ghế đã chọn
+  payBtn.addEventListener('click', () => {
+    if (payBtn.disabled) return;
+    const params = new URLSearchParams({
+      area: 'thuong',
+      tables:   payBtn.dataset.tables,
+      amount:   payBtn.dataset.amount,
+      selected: payBtn.dataset.selected, // ví dụ: "1,2,5"
+      date, time, dn, usr
+    });
+    location.href = '/doanhnghiep/nguoidung/datcho/hoadon?' + params.toString();
+  });
+
+  updateFooter();
+</script>
+

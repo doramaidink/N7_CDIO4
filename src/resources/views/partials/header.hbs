@@ -1,0 +1,307 @@
+
+<div id="header">
+    <div class="logo">
+        <img src="/img/logo.png" alt="">
+    </div>
+    <div class="danhmuc">
+        <div class="home">
+           <a href="/"><h2>Home</h2></a>
+        </div>
+        <div  class="homestay">
+         <a href="/listtrangchus/homestay">  <h2>Homestay</h2></a>
+         <button class="btn-list"> <img  src="/img/down-arrow.png" alt=""></button> 
+           <div class="modal-list-homestay">
+              <div class="tinh">
+               {{#each tinhList}}
+                  <ul data-tinh="{{this}}">
+                   <a href="">{{this}}</a>
+                  </ul>
+              {{/each}}
+              </div>
+            
+              <div class="diadiemhot-container">
+                   {{#each hotByTinhHomestay}}
+                   <div class="diadiemhot" data-tinh="{{@key}}">
+                 
+                   <h2>Hot tại {{@key}}</h2>
+              
+                   {{#each this}}
+                  <a href="/doanhnghiep/{{this.slug}}" class="doanhnghiephot">
+                    <img src="{{this.image}}" alt="{{this.tenDoanhNghiep}}">
+                    <p>{{this.tenDoanhNghiep}}</p>
+                    </a>
+                   
+                   {{/each}}
+                </div>
+                {{/each}}
+              </div>
+           </div>
+        </div>
+        <div class="restaurant">
+            <a href="/listtrangchus/restaurant"><h2>Restaurant</h2></a>
+           <button class="btn-list"> <img  src="/img/down-arrow.png" alt=""></button>
+             <div class="modal-list-restaurant">
+              <div class="tinh">
+               {{#each tinhList}}
+                  <ul data-tinh="{{this}}">
+                   <a href="">{{this}}</a>
+                  </ul>
+              {{/each}}
+              </div>
+            
+              <div class="diadiemhot-container">
+                   {{#each hotByTinhRestaurant}}
+                   <div class="diadiemhot" data-tinh="{{@key}}">
+                 
+                   <h2>Hot tại {{@key}}</h2>
+              
+                   {{#each this}}
+                   <a href="/doanhnghiep/{{this.slug}}" class="doanhnghiephot">
+                    <img src="{{this.image}}" alt="{{this.tenDoanhNghiep}}">
+                    <p>{{this.tenDoanhNghiep}}</p>
+                    </a>
+                   
+                   {{/each}}
+                </div>
+                {{/each}}
+              </div>
+           </div>
+        </div>
+        <div class="bar">
+           <a href="/listtrangchus/bar"><h2>Bar</h2></a> 
+         <button class="btn-list">  <img   src="/img/down-arrow.png" alt=""></button> 
+          <div class="modal-list-bar">
+              <div class="tinh">
+               {{#each tinhList}}
+                  <ul data-tinh="{{this}}">
+                   <a href="">{{this}}</a>
+                  </ul>
+              {{/each}}
+              </div>
+            
+              <div class="diadiemhot-container">
+                   {{#each hotByTinhBar}}
+                   <div class="diadiemhot" data-tinh="{{@key}}">
+                 
+                   <h2>Hot tại {{@key}}</h2>
+              
+                   {{#each this}}
+                    <a href="/doanhnghiep/{{this.slug}}" class="doanhnghiephot">
+                    <img src="{{this.image}}" alt="{{this.tenDoanhNghiep}}">
+                    <p>{{this.tenDoanhNghiep}}</p>
+                    </a>
+                   
+                   {{/each}}
+                </div>
+                {{/each}}
+              </div>
+           </div>
+        </div>
+    </div>
+    <div class="seach">
+        <img src="/img/search.png" alt="">
+        <input id="site-search" type="text " placeholder="Tìm doanh nghiệp...">
+        <div id="search-results" class="search-results"></div>
+      
+    </div>
+    <div class="login">
+      <a href="/login/dangky"><button>Đăng ký</button></a>
+        <button>|</button>
+       <a href="/login/dangnhap"> <button>Đăng Nhập</button></a>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btnlist = document.querySelectorAll('.btn-list');
+  const modallisthomestay = document.querySelector('.modal-list-homestay');
+  const modallistrestaurant = document.querySelector('.modal-list-restaurant');
+  const modallistbar = document.querySelector('.modal-list-bar');
+  const items = document.querySelectorAll(".tinh ul");
+  const hotBlocks = document.querySelectorAll(".diadiemhot");
+ const input = document.getElementById('site-search');
+  const resultsBox = document.getElementById('search-results');
+ /* items.forEach(item => {
+    item.addEventListener("mouseenter", () => {
+      const tinh = item.getAttribute("data-tinh");
+
+      // Ẩn tất cả
+      hotBlocks.forEach(div => div.classList.remove("active"));
+
+      // Hiện đúng tỉnh
+      const target = document.querySelector(`.diadiemhot[data-tinh="${tinh}"]`);
+      if (target) target.classList.add("active");
+    });
+  });
+
+  // Mặc định chọn tỉnh đầu tiên
+  if (items.length > 0) {
+    items[0].dispatchEvent(new Event("mouseenter"));
+  } 
+  */
+  function initModal(modalSelector) {
+  const modal = document.querySelector(modalSelector);
+  if (!modal) return;
+
+  const items = modal.querySelectorAll(".tinh ul");
+  const hotBlocks = modal.querySelectorAll(".diadiemhot");
+
+  items.forEach(item => {
+    item.addEventListener("mouseenter", () => {
+      const tinh = item.getAttribute("data-tinh");
+
+      // Ẩn trong modal hiện tại
+      hotBlocks.forEach(div => div.classList.remove("active"));
+
+      // Hiện đúng tỉnh
+      const target = modal.querySelector(`.diadiemhot[data-tinh="${tinh}"]`);
+      if (target) target.classList.add("active");
+    });
+  });
+
+  // Mặc định chọn tỉnh đầu tiên trong modal này
+  if (items.length > 0) {
+    items[0].dispatchEvent(new Event("mouseenter"));
+  }
+}
+
+// Gọi cho từng modal
+initModal('.modal-list-homestay');
+initModal('.modal-list-restaurant');
+initModal('.modal-list-bar');
+
+
+///Sự kiện click ra modal
+
+//gom tất cả modal lại
+const modals = [modallisthomestay, modallistrestaurant, modallistbar];
+
+// Hàm đóng hết modal
+function closeAll() {
+  modals.forEach(m => m.classList.remove('open'));
+}
+ // list ra modal sau khi ấn 
+btnlist[0].addEventListener('click', () => {
+  const isOpen = modallisthomestay.classList.contains('open');
+  closeAll();
+  if (!isOpen) modallisthomestay.classList.add('open');
+});
+
+btnlist[1].addEventListener('click', () => {
+  const isOpen = modallistrestaurant.classList.contains('open');
+  closeAll();
+  if (!isOpen) modallistrestaurant.classList.add('open');
+});
+
+btnlist[2].addEventListener('click', () => {
+  const isOpen = modallistbar.classList.contains('open');
+  closeAll();
+  if (!isOpen) modallistbar.classList.add('open');
+});
+
+
+
+  if (input && resultsBox) {
+    let timer = null;
+    let currentIndex = -1; // cho điều hướng bằng phím
+
+    function clearResults() {
+      resultsBox.innerHTML = '';
+      resultsBox.classList.remove('open');
+      currentIndex = -1;
+    }
+
+    function renderResults(items = []) {
+      if (!items.length) {
+        resultsBox.innerHTML = '<div style="padding:8px 12px;color:#666">Không tìm thấy kết quả</div>';
+        resultsBox.classList.add('open');
+        return;
+      }
+      const html = items.map(it => `
+        <a class="search-item" href="/doanhnghiep/${it.slug}">
+          <img src="${it.image}" alt="${it.tenDoanhNghiep}">
+          <div>
+            <div>${it.tenDoanhNghiep}</div>
+            <div class="search-meta">${it.loaiDoanhNghiep || ''} • ${it.tinh || ''}</div>
+          </div>
+        </a>
+      `).join('');
+      resultsBox.innerHTML = html;
+      resultsBox.classList.add('open');
+    }
+
+    function setActive(index) {
+      const els = resultsBox.querySelectorAll('.search-item');
+      els.forEach(el => el.classList.remove('active'));
+      if (index >= 0 && index < els.length) {
+        els[index].classList.add('active');
+        els[index].scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    async function doSearch(q) {
+      const url = `/api/search?q=${encodeURIComponent(q)}&limit=10`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+      return data.results || [];
+    }
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      if (timer) clearTimeout(timer);
+
+      if (!q) {
+        clearResults();
+        return;
+      }
+
+      timer = setTimeout(async () => {
+        try {
+          const results = await doSearch(q);
+          renderResults(results);
+        } catch (e) {
+          console.error(e);
+          clearResults();
+        }
+      }, 250); // debounce 250ms
+    });
+
+    // Ẩn dropdown khi click ra ngoài
+    document.addEventListener('click', (e) => {
+      if (!resultsBox.contains(e.target) && e.target !== input) {
+        clearResults();
+      }
+    });
+
+    // Điều hướng phím: ↑ ↓ Enter Esc
+    input.addEventListener('keydown', (e) => {
+      const items = resultsBox.querySelectorAll('.search-item');
+      if (!resultsBox.classList.contains('open') || !items.length) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentIndex = (currentIndex + 1) % items.length;
+        setActive(currentIndex);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        setActive(currentIndex);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentIndex >= 0 && currentIndex < items.length) {
+          items[currentIndex].click();
+        } else {
+          // nếu không chọn item, có thể điều hướng tới trang kết quả tổng (nếu bạn làm)
+          // window.location.href = `/tim-kiem?q=${encodeURIComponent(input.value.trim())}`;
+        }
+      } else if (e.key === 'Escape') {
+        clearResults();
+      }
+    });
+  }
+});
+
+
+
+</script>
